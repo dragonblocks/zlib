@@ -66,18 +66,6 @@ if(MSVC)
     include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 endif()
 
-if(NOT CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_CURRENT_BINARY_DIR)
-    # If we're doing an out of source build and the user has a zconf.h
-    # in their source tree...
-    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/zconf.h)
-        message(STATUS "Renaming")
-        message(STATUS "    ${CMAKE_CURRENT_SOURCE_DIR}/zconf.h")
-        message(STATUS "to 'zconf.h.included' because this file is included with zlib")
-        message(STATUS "but CMake generates it automatically in the build directory.")
-        file(RENAME ${CMAKE_CURRENT_SOURCE_DIR}/zconf.h ${CMAKE_CURRENT_SOURCE_DIR}/zconf.h.included)
-  endif()
-endif()
-
 set(ZLIB_PC ${CMAKE_CURRENT_BINARY_DIR}/zlib.pc)
 configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/zlib.pc.cmakein
 		${ZLIB_PC} @ONLY)
@@ -187,6 +175,15 @@ add_library(zlib SHARED ${ZLIB_SRCS} ${ZLIB_ASMS} ${ZLIB_DLL_SRCS} ${ZLIB_PUBLIC
 add_library(zlibstatic STATIC ${ZLIB_SRCS} ${ZLIB_ASMS} ${ZLIB_PUBLIC_HDRS} ${ZLIB_PRIVATE_HDRS})
 set_target_properties(zlib PROPERTIES DEFINE_SYMBOL ZLIB_DLL)
 set_target_properties(zlib PROPERTIES SOVERSION 1)
+
+target_include_directories(zlib
+	PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
+	PUBLIC ${CMAKE_CURRENT_BINARY_DIR}
+)
+target_include_directories(zlibstatic
+	PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
+	PUBLIC ${CMAKE_CURRENT_BINARY_DIR}
+)
 
 if(NOT CYGWIN)
     # This property causes shared libraries on Linux to have the full version
